@@ -1,46 +1,48 @@
 const mymap = L.map("mapid");
 //Mapbox api key
 const api_key =
-    "pk.eyJ1IjoiaGFyaXNoc2FtYmFzaXZhbSIsImEiOiJjanZkZTU5cnkxajZhNGRtbXdzOXlneG8zIn0.cYxPnbSBkb-GlLwCETmOvw";
+  "pk.eyJ1IjoiaGFyaXNoc2FtYmFzaXZhbSIsImEiOiJjanZkZTU5cnkxajZhNGRtbXdzOXlneG8zIn0.cYxPnbSBkb-GlLwCETmOvw";
+
 //Marker icon
 var myIcon = L.icon({
-    iconUrl: "images/image.png",
-    iconSize: [60, 85]
+  iconUrl: "images/image.png",
+  iconSize: [25, 25]
 });
 
 //Adding mapbox tiles
 
-const tiles = L.tileLayer(
-    `https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=${api_key}`, {
-        maxZoom: 15,
+const tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const tiles = L.tileLayer(tileUrl);
+tiles.addTo(mymap);
 
-        id: "mapbox.streets"
-    }
-).addTo(mymap);
 //to avoid auto adjusting view of map
 let firstTime = true;
+
 //adding marker initially
 const marker = L.marker([0, 0], {
-    icon: myIcon
+  icon: myIcon
 }).addTo(mymap);
-//getting API data from wheretheiss.at and mapping it using leaflet
-async function getData() {
-    const data = await fetch(
-        "https://api.wheretheiss.at/v1/satellites/25544"
-    );
-    const JSONdata = await data.json();
-    const {
-        latitude,
-        longitude
-    } = JSONdata;
+
+//getting using Mozila geo location api
+function getData() {
+  let latitude;
+  let longitude;
+
+  navigator.geolocation.getCurrentPosition(position => {
+    latitude = position.coords.latitude;
+    longitude = position.coords.longitude;
+
     if (firstTime) {
-        mymap.setView([latitude, longitude], 3);
-        firstTime = false;
+      mymap.setView([latitude, longitude], 10);
+      firstTime = false;
     }
 
-    marker.setLatLng([latitude, longitude], {
+    marker
+      .setLatLng([latitude, longitude], {
         icon: myIcon
-    }).addTo(mymap);
+      })
+      .addTo(mymap);
+  });
 }
 
 getData();
